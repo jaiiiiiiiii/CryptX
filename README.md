@@ -33,8 +33,8 @@ A sleek, terminal-like web application that allows users to encrypt and decrypt 
 
 1. Clone the repository:
     ```bash
-    git clone https://github.com/jaiiiiiiiii/crypto-terminal.git
-    cd crypto-terminal
+    https://github.com/jaiiiiiiiii/CryptX.git
+    cd CryptX
     ```
 
 2. Create a virtual environment:
