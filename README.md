@@ -9,8 +9,6 @@ A sleek, terminal-like web application that allows users to encrypt and decrypt 
 - [Technologies Used](#technologies-used)
 - [Installation](#installation)
 - [Usage](#usage)
-- [Contributing](#contributing)
-- [License](#license)
 
 ## Features
 - **File Encryption**: Upload a file and receive an encrypted version, bundled in a ZIP file.
@@ -71,30 +69,10 @@ The server will run on `http://localhost:5000`.
     - **Decrypt File**: Click the "Decrypt File" button and upload a ZIP file containing the encrypted file. You will receive the decrypted file as a `.txt` file.
 3. Follow the on-screen logs and status updates for real-time feedback on the process.
 
-## Contributing
 
-We welcome contributions! To contribute to this project:
 
 1. Fork the repository.
 2. Clone your fork:
     ```bash
     git clone https://github.com/jaiiiiiiiii/crypto-terminal.git
     ```
-3. Create a new branch:
-    ```bash
-    git checkout -b feature-branch
-    ```
-4. Make your changes and commit them:
-    ```bash
-    git add .
-    git commit -m "Add new feature"
-    ```
-5. Push to your fork:
-    ```bash
-    git push origin feature-branch
-    ```
-6. Open a pull request on the main repository.
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
