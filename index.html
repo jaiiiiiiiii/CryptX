@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crypto Terminal</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Source+Code+Pro:wght@400;600&display=swap');
+
+        body {
+            font-family: 'Source Code Pro', monospace;
+            background-color: #1a1a1a;
+            color: #4fd1c5;
+            margin: 0;
+            min-height: 100vh;
+        }
+
+        .terminal-container {
+            background: rgba(0, 0, 0, 0.7);
+            border: 1px solid rgba(79, 209, 197, 0.2);
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 0 20px rgba(79, 209, 197, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .terminal-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+            padding: 12px;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 6px;
+        }
+
+        .terminal-body {
+            height: 400px;
+            overflow-y: auto;
+            margin-bottom: 20px;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 6px;
+        }
+
+        .terminal-body::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .terminal-body::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.3);
+        }
+
+        .terminal-body::-webkit-scrollbar-thumb {
+            background: rgba(79, 209, 197, 0.3);
+            border-radius: 4px;
+        }
+
+        .log-entry {
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+            margin-bottom: 8px;
+            opacity: 0;
+            animation: fadeIn 0.3s forwards;
+        }
+
+        .timestamp {
+            font-size: 0.8em;
+            opacity: 0.5;
+            min-width: 80px;
+        }
+
+        .success { color: #48bb78; }
+        .error { color: #f56565; }
+        .process { color: #4299e1; }
+        .title { 
+            color: #9f7aea;
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+
+        .button {
+            background: rgba(79, 209, 197, 0.1);
+            border: none;
+            color: #4fd1c5;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s;
+            font-family: 'Source Code Pro', monospace;
+        }
+
+        .button:hover {
+            background: rgba(79, 209, 197, 0.2);
+            transform: translateY(-1px);
+        }
+
+        .button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8em;
+            color: rgba(79, 209, 197, 0.5);
+            margin-top: 12px;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .matrix-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            opacity: 0.15;
+        }
+
+        .glow {
+            position: absolute;
+            inset: -1px;
+            background: linear-gradient(45deg, #4fd1c5, #9f7aea);
+            filter: blur(15px);
+            opacity: 0.15;
+            z-index: -1;
+        }
+
+        .button-container {
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+        }
+    </style>
+</head>
+<body class="p-6">
+    <canvas id="matrix-bg" class="matrix-bg"></canvas>
+    
+    <div class="max-w-4xl mx-auto">
+        <div class="terminal-header">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M4 17l6-6-6-6M12 19h8"/>
+            </svg>
+            <h1 class="text-xl font-bold tracking-wider">CRYPTO TERMINAL</h1>
+            <div id="status-indicator" class="ml-auto w-2 h-2 rounded-full bg-green-500"></div>
+        </div>
+
+        <div class="terminal-container relative">
+            <div class="glow"></div>
+            <div id="terminal" class="terminal-body"></div>
+
+            <div class="button-container">
+                <input type="file" id="fileInput" class="hidden">
+                <button id="encryptBtn" class="button">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                        <path d="M7 11V7a5 5 0 0110 0v4"/>
+                    </svg>
+                    Encrypt File
+                </button>
+                <button id="decryptBtn" class="button">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                        <path d="M7 11V7a5 5 0 0110 0v4"/>
+                    </svg>
+                    Decrypt File
+                </button>
+            </div>
+        </div>
+
+        <div class="status-bar">
+            <div>Status: <span id="statusText">READY</span></div>
+            <div>Mode: <span id="modeText">SELECT</span></div>
+        </div>
+    </div>
+
+    <script>
+        class CryptoTerminal {
+            constructor() {
+                this.terminal = document.getElementById('terminal');
+                this.fileInput = document.getElementById('fileInput');
+                this.statusIndicator = document.getElementById('status-indicator');
+                this.statusText = document.getElementById('statusText');
+                this.modeText = document.getElementById('modeText');
+                this.mode = 'select';
+                this.status = 'idle';
+
+                this.initializeEventListeners();
+                this.initializeMatrixBackground();
+                this.bootSequence();
+            }
+
+            async bootSequence() {
+                this.addLog('CRYPTO WEB TERMINAL v1.0', 'title');
+                await this.delay(500);
+                this.addLog('Initializing secure environment...', 'info');
+                await this.delay(500);
+                this.addLog('System ready.', 'success');
+                this.addLog('Select operation:', 'prompt');
+                this.addLog('1. Encrypt file', 'option');
+                this.addLog('2. Decrypt file', 'option');
+            }
+
+            initializeEventListeners() {
+                document.getElementById('encryptBtn').addEventListener('click', () => {
+                    this.mode = 'encrypt';
+                    this.modeText.textContent = 'ENCRYPT';
+                    this.fileInput.click();
+                });
+
+                document.getElementById('decryptBtn').addEventListener('click', () => {
+                    this.mode = 'decrypt';
+                    this.modeText.textContent = 'DECRYPT';
+                    this.fileInput.click();
+                });
+
+                this.fileInput.addEventListener('change', (e) => this.handleFileUpload(e));
+            }
+
+            initializeMatrixBackground() {
+                const canvas = document.getElementById('matrix-bg');
+                const ctx = canvas.getContext('2d');
+
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+
+                const chars = "アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン0123456789";
+                const columns = canvas.width / 20;
+                const drops = Array(Math.floor(columns)).fill(1);
+
+                function draw() {
+                    ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                    ctx.fillStyle = '#0F0';
+                    ctx.font = '15px monospace';
+
+                    for(let i = 0; i < drops.length; i++) {
+                        const text = chars[Math.floor(Math.random() * chars.length)];
+                        ctx.fillText(text, i * 20, drops[i] * 20);
+
+                        if(drops[i] * 20 > canvas.height && Math.random() > 0.975) {
+                            drops[i] = 0;
+                        }
+                        drops[i]++;
+                    }
+                }
+
+                setInterval(draw, 33);
+            }
+
+            async handleFileUpload(event) {
+                const file = event.target.files[0];
+                if (!file) return;
+
+                this.setStatus('processing');
+                this.addLog(`Processing file: ${file.name}`, 'info');
+
+                const formData = new FormData();
+                formData.append('file', file);
+
+                try {
+                    const endpoint = this.mode === 'encrypt' ? '/api/encrypt' : '/api/decrypt';
+                    const response = await fetch(`http://localhost:5000${endpoint}`, {
+                        method: 'POST',
+                        body: formData,
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('File processing failed');
+                    }
+
+                    const blob = await response.blob();
+                    const downloadUrl = window.URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.href = downloadUrl;
+                    link.download = response.headers.get('content-disposition')?.split('filename=')[1] || 
+                                 (this.mode === 'encrypt' ? 'encrypted.zip' : 'decrypted_file');
+
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    window.URL.revokeObjectURL(downloadUrl);
+
+                    this.addLog(`File ${this.mode}ed successfully!`, 'success');
+                    this.setStatus('idle');
+                    this.resetMode();
+                } catch (error) {
+                    this.addLog(`Error: ${error.message}`, 'error');
+                    this.setStatus('idle');
+                }
+
+                this.fileInput.value = '';
+            }
+
+            addLog(message, type = 'info') {
+                const entry = document.createElement('div');
+                entry.className = 'log-entry';
+
+                const timestamp = document.createElement('span');
+                timestamp.className = 'timestamp';
+                timestamp.textContent = new Date().toLocaleTimeString();
+
+                const content = document.createElement('span');
+                content.className = type;
+                content.textContent = message;
+
+                entry.appendChild(timestamp);
+                entry.appendChild(content);
+                this.terminal.appendChild(entry);
+                this.terminal.scrollTop = this.terminal.scrollHeight;
+            }
+
+            setStatus(newStatus) {
+                this.status = newStatus;
+                this.statusText.textContent = newStatus.toUpperCase();
+                this.statusIndicator.className = `ml-auto w-2 h-2 rounded-full ${
+                    newStatus === 'processing' ? 'bg-yellow-500 animate-pulse' : 'bg-green-500'
+                }`;
+            }
+
+            resetMode() {
+                this.mode = 'select';
+                this.modeText.textContent = 'SELECT';
+                this.addLog('\nSelect operation:', 'prompt');
+                this.addLog('1. Encrypt file', 'option');
+                this.addLog('2. Decrypt file', 'option');
+            }
+
+            delay(ms) {
+                return new Promise(resolve => setTimeout(resolve, ms));
+            }
+        }
+
+        // Initialize the terminal
+        const terminal = new CryptoTerminal();
+    </script>
+</body>
+</html>
