@@ -35,7 +35,7 @@ A sleek, terminal-like web application that allows users to encrypt and decrypt 
 
 1. Clone the repository:
     ```bash
-    git clone https://github.com/yourusername/crypto-terminal.git
+    git clone https://github.com/jaiiiiiiiii/crypto-terminal.git
     cd crypto-terminal
     ```
 
