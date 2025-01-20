@@ -2,7 +2,7 @@
 
 A sleek, terminal-like web application that allows users to encrypt and decrypt files using the AES algorithm. With a matrix-style background and smooth animations, this app provides a cyberpunk aesthetic while ensuring secure file operations.
 
-![Crypto Terminal Screenshot](assets/crypto-terminal-screenshot.png) <!-- Optionally add a screenshot -->
+![Crypto Terminal Screenshot](image.png) <!-- Optionally add a screenshot -->
 
 ## Table of Contents
 - [Features](#features)
